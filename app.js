@@ -1,47 +1,54 @@
-import 'dotenv/config';
-import express from 'express';
-import { InteractionType, InteractionResponseType } from 'discord-interactions';
+import "dotenv/config";
+import express from "express";
+import { InteractionType, InteractionResponseType } from "discord-interactions";
 import {
   VerifyDiscordRequest,
   getServerLeaderboard,
   createPlayerEmbed,
-} from './utils.js';
-import { getFakeProfile, getWikiItem } from './game.js';
+} from "./utils.js";
+import { getFakeProfile, getWikiItem } from "./game.js";
+import { getRandomInt } from "./dice.js";
 
-// Create an express app
 const app = express();
-// Get port, or default to 3000
 const PORT = process.env.PORT || 3000;
-// Parse request body and verifies incoming requests using discord-interactions package
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
-/**
- * Interactions endpoint URL where Discord will send HTTP requests
- */
-app.post('/interactions', async function (req, res) {
-  // Interaction type and data
+app.post("/interactions", async function (req, res) {
   const { type, data } = req.body;
 
-  /**
-   * Handle verification requests
-   */
   if (type === InteractionType.PING) {
     return res.send({ type: InteractionResponseType.PONG });
   }
 
-  // Log request bodies
   console.log(req.body);
 
-  /**
-   * Handle slash command requests
-   * See https://discord.com/developers/docs/interactions/application-commands#slash-commands
-   */
   if (type === InteractionType.APPLICATION_COMMAND) {
     const { name } = data;
 
-    // "leaderboard" command
-    if (name === 'leaderboard') {
-      // Send a message into the channel where command was triggered from
+    if (name === "roll") {
+      const diceSize = data.options[0].value;
+
+      if (diceSize < 0 || typeof diceSize != "number") {
+        console.log("IMPOSSIBLE DICE DETECTED!!!");
+        return res.send({
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: "I ain't gonna simulate a dice that doesn't exist :sob:",
+          },
+        });
+      }
+
+      const numberRolled = getRandomInt(0, diceSize);
+
+      return res.send({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+          content: `Alright, you rolled a **${numberRolled}**`,
+        },
+      });
+    }
+
+    if (name === "leaderboard") {
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
@@ -49,8 +56,8 @@ app.post('/interactions', async function (req, res) {
         },
       });
     }
-    // "profile" command
-    if (name === 'profile') {
+
+    if (name === "profile") {
       const profile = getFakeProfile(0);
       const profileEmbed = createPlayerEmbed(profile);
 
@@ -65,16 +72,16 @@ app.post('/interactions', async function (req, res) {
       // If profile isn't run in a DM with the app, we'll make the response ephemeral and add a share button
       if (interactionContext !== 1) {
         // Make message ephemeral
-        profilePayloadData['flags'] = 64;
+        profilePayloadData["flags"] = 64;
         // Add button to components
-        profilePayloadData['components'] = [
+        profilePayloadData["components"] = [
           {
             type: 1,
             components: [
               {
                 type: 2,
-                label: 'Share Profile',
-                custom_id: 'share_profile',
+                label: "Share Profile",
+                custom_id: "share_profile",
                 style: 2,
               },
             ],
@@ -89,23 +96,23 @@ app.post('/interactions', async function (req, res) {
       });
     }
     // "link" command
-    if (name === 'link') {
+    if (name === "link") {
       // Send a message into the channel where command was triggered from
       return res.send({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
           content:
-            'Authorize your Quests of Wumpus account with your Discord profile.',
+            "Authorize your Quests of Wumpus account with your Discord profile.",
           components: [
             {
               type: 1,
               components: [
                 {
                   type: 2,
-                  label: 'Link Account',
+                  label: "Link Account",
                   style: 5,
                   // If you were building this functionality, you could guide the user through authorizing via your game/site
-                  url: 'https://discord.com/developers/docs/intro',
+                  url: "https://discord.com/developers/docs/intro",
                 },
               ],
             },
@@ -114,7 +121,7 @@ app.post('/interactions', async function (req, res) {
       });
     }
     // "wiki" command
-    if (name === 'wiki') {
+    if (name === "wiki") {
       const option = data.options[0];
       const selectedItem = getWikiItem(option.value);
       // Send a message into the channel where command was triggered from
@@ -141,5 +148,5 @@ app.post('/interactions', async function (req, res) {
 });
 
 app.listen(PORT, () => {
-  console.log('Listening on port', PORT);
+  console.log("Listening on port", PORT);
 });
