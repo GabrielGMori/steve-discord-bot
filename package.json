@@ -2,15 +2,15 @@
   "name": "getting-started",
   "version": "1.0.0",
   "description": "Discord example app",
-  "main": "app.js",
+  "main": "api/index.js",
   "type": "module",
   "engines": {
     "node": ">=20.x"
   },
   "scripts": {
-    "start": "node app.js",
+    "start": "node api/index.js",
     "register": "node commands.js",
-    "dev": "nodemon app.js"
+    "dev": "node api/index.js"
   },
   "author": "Shay DeWael",
   "license": "MIT",

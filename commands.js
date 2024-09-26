@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { fakeGameItems } from "./game.js";
+import { fakeGameItems } from "./commands/game.js";
 import { InstallGlobalCommands } from "./utils.js";
 
 const DICE_ROLL = {
