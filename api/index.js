@@ -5,13 +5,17 @@ import {
   VerifyDiscordRequest,
   getServerLeaderboard,
   createPlayerEmbed,
-} from "./utils.js";
-import { getFakeProfile, getWikiItem } from "./game.js";
-import { getRandomInt } from "./dice.js";
+} from "../utils.js";
+import { getFakeProfile, getWikiItem } from "../commands/game.js";
+import { getRandomInt } from "../commands/dice.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
+
+app.get("/interactions", async function (req, res) {
+  res.send({ hello: "Hello!" });
+});
 
 app.post("/interactions", async function (req, res) {
   const { type, data } = req.body;
@@ -147,6 +151,8 @@ app.post("/interactions", async function (req, res) {
   }
 });
 
-app.listen(PORT, () => {
-  console.log("Listening on port", PORT);
-});
+// app.listen(PORT, () => {
+//   console.log("Listening on port", PORT);
+// });
+
+export default app;

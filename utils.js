@@ -1,32 +1,32 @@
-import 'dotenv/config';
-import { verifyKey } from 'discord-interactions';
-import { getFakeUsername } from './game.js';
+import "dotenv/config";
+import { verifyKey } from "discord-interactions";
+import { getFakeUsername } from "./commands/game.js";
 
 export function VerifyDiscordRequest(clientKey) {
   return function (req, res, buf) {
-    const signature = req.get('X-Signature-Ed25519');
-    const timestamp = req.get('X-Signature-Timestamp');
+    const signature = req.get("X-Signature-Ed25519");
+    const timestamp = req.get("X-Signature-Timestamp");
     console.log(signature, timestamp, clientKey);
 
     const isValidRequest = verifyKey(buf, signature, timestamp, clientKey);
     if (!isValidRequest) {
-      res.status(401).send('Bad request signature');
-      throw new Error('Bad request signature');
+      res.status(401).send("Bad request signature");
+      throw new Error("Bad request signature");
     }
   };
 }
 
 export async function DiscordRequest(endpoint, options) {
   // append endpoint to root API URL
-  const url = 'https://discord.com/api/v10/' + endpoint;
+  const url = "https://discord.com/api/v10/" + endpoint;
   // Stringify payloads
   if (options.body) options.body = JSON.stringify(options.body);
   const res = await fetch(url, {
     headers: {
       Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
-      'Content-Type': 'application/json; charset=UTF-8',
-      'User-Agent':
-        'DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)',
+      "Content-Type": "application/json; charset=UTF-8",
+      "User-Agent":
+        "DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)",
     },
     ...options,
   });
@@ -46,7 +46,7 @@ export async function InstallGlobalCommands(appId, commands) {
 
   try {
     // This is calling the bulk overwrite endpoint: https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-global-application-commands
-    await DiscordRequest(endpoint, { method: 'PUT', body: commands });
+    await DiscordRequest(endpoint, { method: "PUT", body: commands });
   } catch (err) {
     console.error(err);
   }
@@ -60,7 +60,7 @@ export async function getServerLeaderboard(guildId) {
   let members = await getServerMembers(guildId, 3);
   members = members
     .map((id, i) => `${i + 1}. <@${id}> (\`${getFakeUsername(i)}\`)`)
-    .join('\n');
+    .join("\n");
   return `## :trophy: Server Leaderboard\n*This is a very fake leaderboard that just pulls random server members. Pretend it's pulling real game data and it's much more fun* :zany_face:\n\n### This week\n${members}\n\n### All time\n${members}`;
 }
 
@@ -68,7 +68,7 @@ async function getServerMembers(guildId, limit) {
   const endpoint = `guilds/${guildId}/members?limit=${limit}`;
 
   try {
-    const res = await DiscordRequest(endpoint, { method: 'GET' });
+    const res = await DiscordRequest(endpoint, { method: "GET" });
     const parsedRes = await res.json();
     return parsedRes.map((member) => member.user.id);
   } catch (err) {
@@ -78,7 +78,7 @@ async function getServerMembers(guildId, limit) {
 
 export function createPlayerEmbed(profile) {
   return {
-    type: 'rich',
+    type: "rich",
     title: `${profile.username} Profile (lvl ${profile.stats.level})`,
     color: 0x968b9f,
     fields: [
@@ -107,9 +107,9 @@ export function createPlayerEmbed(profile) {
         inline: true,
       },
     ],
-    url: 'https://discord.com/developers/docs/intro',
+    url: "https://discord.com/developers/docs/intro",
     thumbnail: {
-      url: 'https://raw.githubusercontent.com/shaydewael/example-app/main/assets/fake-icon.png',
+      url: "https://raw.githubusercontent.com/shaydewael/example-app/main/assets/fake-icon.png",
     },
   };
 }
